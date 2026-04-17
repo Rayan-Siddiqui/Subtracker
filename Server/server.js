@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
 
 // Create app
 const app = express();
@@ -21,6 +22,9 @@ app.get('/api/test', (req, res) => {
 
 // Use auth routes
 app.use('/api/auth', authRoutes);
+
+// Use subscription routes
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
