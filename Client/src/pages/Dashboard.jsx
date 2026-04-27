@@ -9,7 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import {
   fetchSubscriptions,
   createSubscription,
-  deleteSubscription
+  deleteSubscription,
+  updateSubscription
 } from '../services/subscriptionService';
 
 // Import form component
@@ -29,6 +30,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Edit state
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({});
 
   // Send user back to login if token is missing
   useEffect(() => {
@@ -84,6 +89,52 @@ export default function Dashboard() {
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete subscription');
     }
+  };
+
+  // Start editing a subscription
+  const handleEditClick = (sub) => {
+    setEditingId(sub._id);
+    setEditData({
+      serviceName: sub.serviceName || '',
+      category: sub.category || '',
+      monthlyCost: sub.monthlyCost || '',
+      billingDate: sub.billingDate ? sub.billingDate.slice(0, 10) : '',
+      notes: sub.notes || ''
+    });
+  };
+
+  // Update edit form fields
+  const handleEditChange = (e) => {
+    setEditData({
+      ...editData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // Save edited subscription
+  const handleSaveEdit = async () => {
+    try {
+      setSaving(true);
+
+      await updateSubscription(editingId, {
+        ...editData,
+        monthlyCost: Number(editData.monthlyCost)
+      });
+
+      setEditingId(null);
+      setEditData({});
+      await loadSubscriptions();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update subscription');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditData({});
   };
 
   // Calculate the total monthly cost
@@ -179,35 +230,131 @@ export default function Dashboard() {
                         isDueSoon ? 'border-red-500 bg-red-50' : 'border-gray-200'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-lg font-semibold">
-                            {sub.serviceName}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {sub.category}
-                          </p>
-                          <p className="mt-2 font-medium">
-                            ${Number(sub.monthlyCost).toFixed(2)} / month
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Billing Date:{' '}
-                            {new Date(sub.billingDate).toLocaleDateString()}
-                          </p>
-                          {sub.notes && (
-                            <p className="mt-2 text-sm text-gray-700">
-                              {sub.notes}
-                            </p>
-                          )}
-                        </div>
+                      {editingId === sub._id ? (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Service Name
+                            </label>
+                            <input
+                              type="text"
+                              name="serviceName"
+                              value={editData.serviceName}
+                              onChange={handleEditChange}
+                              className="w-full rounded border p-2"
+                            />
+                          </div>
 
-                        <button
-                          onClick={() => handleDeleteSubscription(sub._id)}
-                          className="rounded bg-gray-800 px-3 py-1 text-sm text-white"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Category
+                            </label>
+                            <input
+                              type="text"
+                              name="category"
+                              value={editData.category}
+                              onChange={handleEditChange}
+                              className="w-full rounded border p-2"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Monthly Cost
+                            </label>
+                            <input
+                              type="number"
+                              name="monthlyCost"
+                              value={editData.monthlyCost}
+                              onChange={handleEditChange}
+                              className="w-full rounded border p-2"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Billing Date
+                            </label>
+                            <input
+                              type="date"
+                              name="billingDate"
+                              value={editData.billingDate}
+                              onChange={handleEditChange}
+                              className="w-full rounded border p-2"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Notes
+                            </label>
+                            <textarea
+                              name="notes"
+                              value={editData.notes}
+                              onChange={handleEditChange}
+                              className="w-full rounded border p-2"
+                              rows="3"
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleSaveEdit}
+                              className="rounded bg-green-600 px-3 py-2 text-white"
+                            >
+                              Save
+                            </button>
+
+                            <button
+                              onClick={handleCancelEdit}
+                              className="rounded bg-gray-500 px-3 py-2 text-white"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Normal view mode
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">
+                              {sub.serviceName}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {sub.category}
+                            </p>
+                            <p className="mt-2 font-medium">
+                              ${Number(sub.monthlyCost).toFixed(2)} / month
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Billing Date:{' '}
+                              {new Date(sub.billingDate).toLocaleDateString()}
+                            </p>
+                            {sub.notes && (
+                              <p className="mt-2 text-sm text-gray-700">
+                                {sub.notes}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => handleEditClick(sub)}
+                              className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteSubscription(sub._id)}
+                              className="rounded bg-gray-800 px-3 py-1 text-sm text-white"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

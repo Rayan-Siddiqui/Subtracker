@@ -25,3 +25,9 @@ export const deleteSubscription = async (id) => {
   const res = await API.delete(`/subscriptions/${id}`, authConfig());
   return res.data;
 };
+
+// Update a subscription
+export const updateSubscription = async (id, updatedData) => {
+  const res = await API.put(`/subscriptions/${id}`, updatedData, authConfig());
+  return res.data;
+};
