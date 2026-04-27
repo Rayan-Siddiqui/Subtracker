@@ -13,8 +13,9 @@ import {
   updateSubscription
 } from '../services/subscriptionService';
 
-// Import form component
+// Import form and chart components
 import SubscriptionForm from '../components/SubscriptionForm';
+import SubscriptionChart from '../components/SubscriptionChart';
 
 export default function Dashboard() {
   // Get auth info and logout function
@@ -191,6 +192,9 @@ export default function Dashboard() {
             <p className="mt-2 text-3xl font-bold">{dueSoonCount}</p>
           </div>
         </div>
+
+        {/* Chart */}
+        <SubscriptionChart subscriptions={subscriptions} />
 
         {/* Error message */}
         {error && (
