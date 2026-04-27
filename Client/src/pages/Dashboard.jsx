@@ -19,8 +19,6 @@ import SubscriptionForm from '../components/SubscriptionForm';
 export default function Dashboard() {
   // Get auth info and logout function
   const { user, logout, token } = useAuth();
-
-  // Used for redirecting if token is missing
   const navigate = useNavigate();
 
   // Store subscription data
@@ -35,14 +33,14 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
 
-  // Send user back to login if token is missing
+  // Redirect to login if token is missing
   useEffect(() => {
     if (!token) {
       navigate('/');
     }
   }, [token, navigate]);
 
-  // Load subscriptions when page first opens
+  // Load subscriptions on first render
   useEffect(() => {
     loadSubscriptions();
   }, []);
@@ -52,7 +50,6 @@ export default function Dashboard() {
     try {
       setLoading(true);
       setError('');
-
       const data = await fetchSubscriptions();
       setSubscriptions(data);
     } catch (err) {
@@ -62,7 +59,7 @@ export default function Dashboard() {
     }
   };
 
-  // Handle adding a new subscription
+  // Add a new subscription
   const handleAddSubscription = async (subscriptionData) => {
     try {
       setSaving(true);
@@ -75,13 +72,10 @@ export default function Dashboard() {
     }
   };
 
-  // Handle deleting a subscription
+  // Delete a subscription
   const handleDeleteSubscription = async (id) => {
     const confirmDelete = window.confirm('Delete this subscription?');
-
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
 
     try {
       await deleteSubscription(id);
@@ -91,7 +85,7 @@ export default function Dashboard() {
     }
   };
 
-  // Start editing a subscription
+  // Start editing
   const handleEditClick = (sub) => {
     setEditingId(sub._id);
     setEditData({
@@ -103,7 +97,7 @@ export default function Dashboard() {
     });
   };
 
-  // Update edit form fields
+  // Track edit field changes
   const handleEditChange = (e) => {
     setEditData({
       ...editData,
@@ -111,7 +105,7 @@ export default function Dashboard() {
     });
   };
 
-  // Save edited subscription
+  // Save edit
   const handleSaveEdit = async () => {
     try {
       setSaving(true);
@@ -131,18 +125,18 @@ export default function Dashboard() {
     }
   };
 
-  // Cancel editing
+  // Cancel edit
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditData({});
   };
 
-  // Calculate the total monthly cost
+  // Total monthly cost
   const totalMonthlyCost = subscriptions.reduce((sum, sub) => {
     return sum + Number(sub.monthlyCost || 0);
   }, 0);
 
-  // Count subscriptions that are due within the next 7 days
+  // Subscriptions due in the next 7 days
   const dueSoonSubscriptions = subscriptions.filter((sub) => {
     const billDate = new Date(sub.billingDate);
     const today = new Date();
@@ -152,7 +146,7 @@ export default function Dashboard() {
     return billDate >= today && billDate <= sevenDaysFromNow;
   });
 
-  // Group subscriptions by category
+  // Category totals for a simple breakdown
   const categorySummary = useMemo(() => {
     const totals = {};
 
@@ -167,20 +161,20 @@ export default function Dashboard() {
   }, [subscriptions]);
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Top header */}
-        <div className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-slate-200 backdrop-blur">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* Header */}
+        <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="inline-flex rounded-full bg-blue-50 px-4 py-1 text-sm font-semibold text-blue-700">
-                SubTracker Dashboard
-              </div>
-              <h1 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
+              <p className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+                SubTracker
+              </p>
+              <h1 className="mt-3 text-3xl font-bold text-slate-900">
                 Welcome, {user?.name || 'User'}
               </h1>
               <p className="mt-2 max-w-2xl text-slate-600">
-                Track recurring spending, spot upcoming renewals, and stay in control of your monthly subscriptions.
+                Track recurring charges, spot renewals, and keep monthly spending under control.
               </p>
             </div>
 
@@ -195,28 +189,28 @@ export default function Dashboard() {
 
         {/* Summary cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
               Total Monthly Cost
-            </h2>
+            </p>
             <p className="mt-3 text-4xl font-bold text-slate-900">
               ${totalMonthlyCost.toFixed(2)}
             </p>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
               Total Subscriptions
-            </h2>
+            </p>
             <p className="mt-3 text-4xl font-bold text-slate-900">
               {subscriptions.length}
             </p>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
               Due Soon
-            </h2>
+            </p>
             <p className="mt-3 text-4xl font-bold text-slate-900">
               {dueSoonSubscriptions.length}
             </p>
@@ -224,21 +218,17 @@ export default function Dashboard() {
         </div>
 
         {/* Simple category breakdown */}
-        <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Spending by Category</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                A quick breakdown of where your monthly money goes.
-              </p>
-            </div>
-          </div>
+        <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+          <h2 className="text-2xl font-bold text-slate-900">Spending by Category</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            A quick view of where your monthly spending goes.
+          </p>
 
-          {categorySummary.length === 0 ? (
-            <p className="text-slate-500">No category data yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {categorySummary.map((item) => {
+          <div className="mt-5 space-y-4">
+            {categorySummary.length === 0 ? (
+              <p className="text-slate-500">No category data yet.</p>
+            ) : (
+              categorySummary.map((item) => {
                 const max = categorySummary[0]?.total || 1;
                 const width = Math.max((item.total / max) * 100, 8);
 
@@ -256,62 +246,57 @@ export default function Dashboard() {
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
             {error}
           </div>
         )}
 
-        {/* Main content grid */}
+        {/* Main content */}
         <div className="grid gap-6 xl:grid-cols-2">
           {/* Add form */}
           <SubscriptionForm onAdd={handleAddSubscription} loading={saving} />
 
           {/* Subscription list */}
-          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900">Your Subscriptions</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Edit, delete, and manage each recurring charge.
-                </p>
-              </div>
-            </div>
+          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+            <h2 className="text-2xl font-bold text-slate-900">Your Subscriptions</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Edit or delete each recurring service.
+            </p>
 
-            {loading ? (
-              <p className="text-slate-500">Loading subscriptions...</p>
-            ) : subscriptions.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
-                No subscriptions added yet.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {subscriptions.map((sub) => {
-                  const isDueSoon = (() => {
-                    const billDate = new Date(sub.billingDate);
-                    const today = new Date();
-                    const sevenDaysFromNow = new Date();
-                    sevenDaysFromNow.setDate(today.getDate() + 7);
-                    return billDate >= today && billDate <= sevenDaysFromNow;
-                  })();
+            <div className="mt-5">
+              {loading ? (
+                <p className="text-slate-500">Loading subscriptions...</p>
+              ) : subscriptions.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+                  No subscriptions added yet.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {subscriptions.map((sub) => {
+                    const isDueSoon = (() => {
+                      const billDate = new Date(sub.billingDate);
+                      const today = new Date();
+                      const sevenDaysFromNow = new Date();
+                      sevenDaysFromNow.setDate(today.getDate() + 7);
+                      return billDate >= today && billDate <= sevenDaysFromNow;
+                    })();
 
-                  return (
-                    <div
-                      key={sub._id}
-                      className={`rounded-2xl border p-4 ${
-                        isDueSoon ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'
-                      }`}
-                    >
-                      {editingId === sub._id ? (
-                        // Edit mode
-                        <div className="space-y-3">
-                          <div className="grid gap-3 sm:grid-cols-2">
+                    return (
+                      <div
+                        key={sub._id}
+                        className={`rounded-2xl border p-4 ${
+                          isDueSoon ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'
+                        }`}
+                      >
+                        {editingId === sub._id ? (
+                          <div className="space-y-3">
                             <div>
                               <label className="mb-1 block text-sm font-medium text-slate-700">
                                 Service Name
@@ -325,32 +310,32 @@ export default function Dashboard() {
                               />
                             </div>
 
-                            <div>
-                              <label className="mb-1 block text-sm font-medium text-slate-700">
-                                Category
-                              </label>
-                              <input
-                                type="text"
-                                name="category"
-                                value={editData.category}
-                                onChange={handleEditChange}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
-                              />
-                            </div>
-                          </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                  Category
+                                </label>
+                                <input
+                                  type="text"
+                                  name="category"
+                                  value={editData.category}
+                                  onChange={handleEditChange}
+                                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                                />
+                              </div>
 
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <div>
-                              <label className="mb-1 block text-sm font-medium text-slate-700">
-                                Monthly Cost
-                              </label>
-                              <input
-                                type="number"
-                                name="monthlyCost"
-                                value={editData.monthlyCost}
-                                onChange={handleEditChange}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
-                              />
+                              <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                  Monthly Cost
+                                </label>
+                                <input
+                                  type="number"
+                                  name="monthlyCost"
+                                  value={editData.monthlyCost}
+                                  onChange={handleEditChange}
+                                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                                />
+                              </div>
                             </div>
 
                             <div>
@@ -365,93 +350,88 @@ export default function Dashboard() {
                                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
                               />
                             </div>
-                          </div>
 
-                          <div>
-                            <label className="mb-1 block text-sm font-medium text-slate-700">
-                              Notes
-                            </label>
-                            <textarea
-                              name="notes"
-                              value={editData.notes}
-                              onChange={handleEditChange}
-                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
-                              rows="3"
-                            />
-                          </div>
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-slate-700">
+                                Notes
+                              </label>
+                              <textarea
+                                name="notes"
+                                value={editData.notes}
+                                onChange={handleEditChange}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                                rows="3"
+                              />
+                            </div>
 
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="rounded-2xl bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-500"
-                            >
-                              Save
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="rounded-2xl bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-500"
+                              >
+                                Save
+                              </button>
 
-                            <button
-                              onClick={handleCancelEdit}
-                              className="rounded-2xl bg-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-300"
-                            >
-                              Cancel
-                            </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="rounded-2xl bg-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-300"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        // Normal view mode
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold text-slate-900">
-                                {sub.serviceName}
-                              </h3>
-                              {isDueSoon && (
-                                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
-                                  Due soon
-                                </span>
+                        ) : (
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-semibold text-slate-900">
+                                  {sub.serviceName}
+                                </h3>
+                                {isDueSoon && (
+                                  <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                    Due soon
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="mt-1 text-sm text-slate-500">{sub.category}</p>
+                              <p className="mt-3 text-base font-semibold text-slate-900">
+                                ${Number(sub.monthlyCost).toFixed(2)} / month
+                              </p>
+                              <p className="text-sm text-slate-500">
+                                Billing Date: {new Date(sub.billingDate).toLocaleDateString()}
+                              </p>
+
+                              {sub.notes && (
+                                <p className="mt-3 text-sm leading-6 text-slate-600">
+                                  {sub.notes}
+                                </p>
                               )}
                             </div>
 
-                            <p className="mt-1 text-sm text-slate-500">
-                              {sub.category}
-                            </p>
+                            <div className="flex gap-2 sm:flex-col">
+                              <button
+                                onClick={() => handleEditClick(sub)}
+                                className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+                              >
+                                Edit
+                              </button>
 
-                            <p className="mt-3 text-base font-semibold text-slate-900">
-                              ${Number(sub.monthlyCost).toFixed(2)} / month
-                            </p>
-
-                            <p className="text-sm text-slate-500">
-                              Billing Date: {new Date(sub.billingDate).toLocaleDateString()}
-                            </p>
-
-                            {sub.notes && (
-                              <p className="mt-3 text-sm leading-6 text-slate-600">
-                                {sub.notes}
-                              </p>
-                            )}
+                              <button
+                                onClick={() => handleDeleteSubscription(sub._id)}
+                                className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
-
-                          <div className="flex gap-2 sm:flex-col">
-                            <button
-                              onClick={() => handleEditClick(sub)}
-                              className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              onClick={() => handleDeleteSubscription(sub._id)}
-                              className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
