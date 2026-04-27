@@ -1,5 +1,5 @@
 // Import React hooks
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Import auth context
@@ -13,9 +13,8 @@ import {
   updateSubscription
 } from '../services/subscriptionService';
 
-// Import form and chart components
+// Import form component
 import SubscriptionForm from '../components/SubscriptionForm';
-import SubscriptionChart from '../components/SubscriptionChart';
 
 export default function Dashboard() {
   // Get auth info and logout function
@@ -144,78 +143,153 @@ export default function Dashboard() {
   }, 0);
 
   // Count subscriptions that are due within the next 7 days
-  const dueSoonCount = subscriptions.filter((sub) => {
+  const dueSoonSubscriptions = subscriptions.filter((sub) => {
     const billDate = new Date(sub.billingDate);
     const today = new Date();
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(today.getDate() + 7);
 
     return billDate >= today && billDate <= sevenDaysFromNow;
-  }).length;
+  });
+
+  // Group subscriptions by category
+  const categorySummary = useMemo(() => {
+    const totals = {};
+
+    subscriptions.forEach((sub) => {
+      const category = sub.category || 'Other';
+      totals[category] = (totals[category] || 0) + Number(sub.monthlyCost || 0);
+    });
+
+    return Object.entries(totals)
+      .map(([category, total]) => ({ category, total }))
+      .sort((a, b) => b.total - a.total);
+  }, [subscriptions]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Top header */}
-        <div className="flex items-center justify-between rounded-2xl bg-white p-6 shadow">
-          <div>
-            <h1 className="text-3xl font-bold">SubTracker Dashboard</h1>
-            <p className="text-gray-600">
-              Welcome, {user?.name || 'User'}
-            </p>
-          </div>
+        <div className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-slate-200 backdrop-blur">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="inline-flex rounded-full bg-blue-50 px-4 py-1 text-sm font-semibold text-blue-700">
+                SubTracker Dashboard
+              </div>
+              <h1 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
+                Welcome, {user?.name || 'User'}
+              </h1>
+              <p className="mt-2 max-w-2xl text-slate-600">
+                Track recurring spending, spot upcoming renewals, and stay in control of your monthly subscriptions.
+              </p>
+            </div>
 
-          <button
-            onClick={logout}
-            className="rounded bg-red-600 px-4 py-2 text-white"
-          >
-            Logout
-          </button>
+            <button
+              onClick={logout}
+              className="rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Summary cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="text-sm text-gray-500">Total Monthly Cost</h2>
-            <p className="mt-2 text-3xl font-bold">
+          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+              Total Monthly Cost
+            </h2>
+            <p className="mt-3 text-4xl font-bold text-slate-900">
               ${totalMonthlyCost.toFixed(2)}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="text-sm text-gray-500">Total Subscriptions</h2>
-            <p className="mt-2 text-3xl font-bold">{subscriptions.length}</p>
+          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+              Total Subscriptions
+            </h2>
+            <p className="mt-3 text-4xl font-bold text-slate-900">
+              {subscriptions.length}
+            </p>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="text-sm text-gray-500">Due Soon</h2>
-            <p className="mt-2 text-3xl font-bold">{dueSoonCount}</p>
+          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+              Due Soon
+            </h2>
+            <p className="mt-3 text-4xl font-bold text-slate-900">
+              {dueSoonSubscriptions.length}
+            </p>
           </div>
         </div>
 
-        {/* Chart */}
-        <SubscriptionChart subscriptions={subscriptions} />
+        {/* Simple category breakdown */}
+        <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Spending by Category</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                A quick breakdown of where your monthly money goes.
+              </p>
+            </div>
+          </div>
+
+          {categorySummary.length === 0 ? (
+            <p className="text-slate-500">No category data yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {categorySummary.map((item) => {
+                const max = categorySummary[0]?.total || 1;
+                const width = Math.max((item.total / max) * 100, 8);
+
+                return (
+                  <div key={item.category}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-700">{item.category}</span>
+                      <span className="text-slate-500">${item.total.toFixed(2)}</span>
+                    </div>
+                    <div className="h-3 rounded-full bg-slate-100">
+                      <div
+                        className="h-3 rounded-full bg-blue-600"
+                        style={{ width: `${width}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Error message */}
         {error && (
-          <div className="rounded-2xl bg-red-100 p-4 text-red-700">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
             {error}
           </div>
         )}
 
         {/* Main content grid */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 xl:grid-cols-2">
           {/* Add form */}
           <SubscriptionForm onAdd={handleAddSubscription} loading={saving} />
 
           {/* Subscription list */}
-          <div className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold">Your Subscriptions</h2>
+          <div className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Your Subscriptions</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Edit, delete, and manage each recurring charge.
+                </p>
+              </div>
+            </div>
 
             {loading ? (
-              <p>Loading subscriptions...</p>
+              <p className="text-slate-500">Loading subscriptions...</p>
             ) : subscriptions.length === 0 ? (
-              <p className="text-gray-500">No subscriptions added yet.</p>
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+                No subscriptions added yet.
+              </div>
             ) : (
               <div className="space-y-4">
                 {subscriptions.map((sub) => {
@@ -230,89 +304,93 @@ export default function Dashboard() {
                   return (
                     <div
                       key={sub._id}
-                      className={`rounded-xl border p-4 ${
-                        isDueSoon ? 'border-red-500 bg-red-50' : 'border-gray-200'
+                      className={`rounded-2xl border p-4 ${
+                        isDueSoon ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'
                       }`}
                     >
                       {editingId === sub._id ? (
                         // Edit mode
                         <div className="space-y-3">
-                          <div>
-                            <label className="mb-1 block text-sm font-medium">
-                              Service Name
-                            </label>
-                            <input
-                              type="text"
-                              name="serviceName"
-                              value={editData.serviceName}
-                              onChange={handleEditChange}
-                              className="w-full rounded border p-2"
-                            />
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-slate-700">
+                                Service Name
+                              </label>
+                              <input
+                                type="text"
+                                name="serviceName"
+                                value={editData.serviceName}
+                                onChange={handleEditChange}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-slate-700">
+                                Category
+                              </label>
+                              <input
+                                type="text"
+                                name="category"
+                                value={editData.category}
+                                onChange={handleEditChange}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-slate-700">
+                                Monthly Cost
+                              </label>
+                              <input
+                                type="number"
+                                name="monthlyCost"
+                                value={editData.monthlyCost}
+                                onChange={handleEditChange}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-slate-700">
+                                Billing Date
+                              </label>
+                              <input
+                                type="date"
+                                name="billingDate"
+                                value={editData.billingDate}
+                                onChange={handleEditChange}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+                              />
+                            </div>
                           </div>
 
                           <div>
-                            <label className="mb-1 block text-sm font-medium">
-                              Category
-                            </label>
-                            <input
-                              type="text"
-                              name="category"
-                              value={editData.category}
-                              onChange={handleEditChange}
-                              className="w-full rounded border p-2"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-1 block text-sm font-medium">
-                              Monthly Cost
-                            </label>
-                            <input
-                              type="number"
-                              name="monthlyCost"
-                              value={editData.monthlyCost}
-                              onChange={handleEditChange}
-                              className="w-full rounded border p-2"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-1 block text-sm font-medium">
-                              Billing Date
-                            </label>
-                            <input
-                              type="date"
-                              name="billingDate"
-                              value={editData.billingDate}
-                              onChange={handleEditChange}
-                              className="w-full rounded border p-2"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-1 block text-sm font-medium">
+                            <label className="mb-1 block text-sm font-medium text-slate-700">
                               Notes
                             </label>
                             <textarea
                               name="notes"
                               value={editData.notes}
                               onChange={handleEditChange}
-                              className="w-full rounded border p-2"
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
                               rows="3"
                             />
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <button
                               onClick={handleSaveEdit}
-                              className="rounded bg-green-600 px-3 py-2 text-white"
+                              className="rounded-2xl bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-500"
                             >
                               Save
                             </button>
 
                             <button
                               onClick={handleCancelEdit}
-                              className="rounded bg-gray-500 px-3 py-2 text-white"
+                              className="rounded-2xl bg-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-300"
                             >
                               Cancel
                             </button>
@@ -320,39 +398,49 @@ export default function Dashboard() {
                         </div>
                       ) : (
                         // Normal view mode
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <h3 className="text-lg font-semibold">
-                              {sub.serviceName}
-                            </h3>
-                            <p className="text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold text-slate-900">
+                                {sub.serviceName}
+                              </h3>
+                              {isDueSoon && (
+                                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                  Due soon
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="mt-1 text-sm text-slate-500">
                               {sub.category}
                             </p>
-                            <p className="mt-2 font-medium">
+
+                            <p className="mt-3 text-base font-semibold text-slate-900">
                               ${Number(sub.monthlyCost).toFixed(2)} / month
                             </p>
-                            <p className="text-sm text-gray-600">
-                              Billing Date:{' '}
-                              {new Date(sub.billingDate).toLocaleDateString()}
+
+                            <p className="text-sm text-slate-500">
+                              Billing Date: {new Date(sub.billingDate).toLocaleDateString()}
                             </p>
+
                             {sub.notes && (
-                              <p className="mt-2 text-sm text-gray-700">
+                              <p className="mt-3 text-sm leading-6 text-slate-600">
                                 {sub.notes}
                               </p>
                             )}
                           </div>
 
-                          <div className="flex flex-col gap-2">
+                          <div className="flex gap-2 sm:flex-col">
                             <button
                               onClick={() => handleEditClick(sub)}
-                              className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+                              className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
                             >
                               Edit
                             </button>
 
                             <button
                               onClick={() => handleDeleteSubscription(sub._id)}
-                              className="rounded bg-gray-800 px-3 py-1 text-sm text-white"
+                              className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                             >
                               Delete
                             </button>
