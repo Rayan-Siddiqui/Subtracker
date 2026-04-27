@@ -40,78 +40,97 @@ export default function SubscriptionForm({ onAdd, loading }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow">
-      <h2 className="text-xl font-semibold">Add Subscription</h2>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium">Service Name</label>
-        <input
-          type="text"
-          name="serviceName"
-          value={formData.serviceName}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-          placeholder="Netflix"
-          required
-        />
+    <form onSubmit={handleSubmit} className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-slate-900">Add subscription</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Keep track of every recurring charge in one place.
+        </p>
       </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium">Category</label>
-        <input
-          type="text"
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-          placeholder="Streaming"
-          required
-        />
-      </div>
+      <div className="grid gap-4">
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Service Name
+          </label>
+          <input
+            type="text"
+            name="serviceName"
+            value={formData.serviceName}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+            placeholder="Netflix"
+            required
+          />
+        </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium">Monthly Cost</label>
-        <input
-          type="number"
-          name="monthlyCost"
-          value={formData.monthlyCost}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-          placeholder="15.99"
-          step="0.01"
-          min="0"
-          required
-        />
-      </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Category
+          </label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+            placeholder="Streaming"
+            required
+          />
+        </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium">Billing Date</label>
-        <input
-          type="date"
-          name="billingDate"
-          value={formData.billingDate}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-          required
-        />
-      </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Monthly Cost
+            </label>
+            <input
+              type="number"
+              name="monthlyCost"
+              value={formData.monthlyCost}
+              onChange={handleChange}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+              placeholder="15.99"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium">Notes</label>
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-          placeholder="Optional notes"
-          rows="3"
-        />
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Billing Date
+            </label>
+            <input
+              type="date"
+              name="billingDate"
+              value={formData.billingDate}
+              onChange={handleChange}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Notes
+          </label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-500 focus:bg-white"
+            placeholder="Optional notes"
+            rows="4"
+          />
+        </div>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="mt-6 w-full rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
       >
         {loading ? 'Saving...' : 'Add Subscription'}
       </button>
