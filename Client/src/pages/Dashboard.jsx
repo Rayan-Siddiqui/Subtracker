@@ -1,18 +1,14 @@
-// React hooks
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Auth
 import { useAuth } from '../context/AuthContext';
 
-// API calls
 import {
   fetchSubscriptions,
   deleteSubscription,
   createSubscription
 } from '../services/subscriptionService';
 
-// Components
 import SubscriptionForm from '../components/SubscriptionForm';
 import SubscriptionChart from '../components/SubscriptionChart';
 
@@ -20,22 +16,18 @@ export default function Dashboard() {
   const { user, logout, token } = useAuth();
   const navigate = useNavigate();
 
-  // State
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Edit state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!token) navigate('/');
   }, [token, navigate]);
 
-  // Load data
   useEffect(() => {
     loadSubscriptions();
   }, []);
@@ -45,14 +37,13 @@ export default function Dashboard() {
       setLoading(true);
       const data = await fetchSubscriptions();
       setSubscriptions(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load subscriptions');
     } finally {
       setLoading(false);
     }
   };
 
-  // Add subscription
   const handleAdd = async (data) => {
     try {
       setSaving(true);
@@ -65,7 +56,6 @@ export default function Dashboard() {
     }
   };
 
-  // Delete subscription
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this subscription?')) return;
 
@@ -77,7 +67,6 @@ export default function Dashboard() {
     }
   };
 
-  // Edit
   const startEdit = (sub) => {
     setEditingId(sub._id);
     setEditForm({
@@ -85,12 +74,15 @@ export default function Dashboard() {
       category: sub.category,
       monthlyCost: sub.monthlyCost,
       billingDate: sub.billingDate?.slice(0, 10),
-      notes: sub.notes || ''
+      notes: sub.notes || ''   // ✅ FIXED: ensures notes are included
     });
   };
 
   const handleEditChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    setEditForm({
+      ...editForm,
+      [e.target.name]: e.target.value
+    });
   };
 
   const saveEdit = async () => {
@@ -114,7 +106,6 @@ export default function Dashboard() {
     }
   };
 
-  // Summary stats
   const totalCost = subscriptions.reduce(
     (sum, sub) => sum + Number(sub.monthlyCost || 0),
     0
@@ -154,7 +145,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Summary Cards */}
+        {/* Summary */}
         <div className="grid md:grid-cols-3 gap-4">
           <div className="bg-white p-6 rounded-2xl shadow">
             <p>Total Cost</p>
@@ -182,7 +173,6 @@ export default function Dashboard() {
         {/* Layout */}
         <div className="grid lg:grid-cols-2 gap-6">
 
-          {/* Form */}
           <SubscriptionForm onAdd={handleAdd} loading={saving} />
 
           {/* List */}
@@ -218,8 +208,8 @@ export default function Dashboard() {
                         />
 
                         <input
-                          name="monthlyCost"
                           type="number"
+                          name="monthlyCost"
                           value={editForm.monthlyCost}
                           onChange={handleEditChange}
                           className="w-full border p-2 rounded"
@@ -238,6 +228,7 @@ export default function Dashboard() {
                           value={editForm.notes}
                           onChange={handleEditChange}
                           className="w-full border p-2 rounded"
+                          placeholder="Additional info..."
                         />
 
                         <div className="flex gap-2">
@@ -258,14 +249,24 @@ export default function Dashboard() {
                       </div>
                     ) : (
                       <div className="flex justify-between">
+
                         <div>
                           <h3 className="font-semibold">
                             {sub.serviceName}
                           </h3>
+
                           <p className="text-sm text-gray-500">
                             {sub.category}
                           </p>
+
                           <p>${sub.monthlyCost}/month</p>
+
+                          {/* ✅ FIXED: show notes */}
+                          {sub.notes && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {sub.notes}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex gap-2">
@@ -283,6 +284,7 @@ export default function Dashboard() {
                             Delete
                           </button>
                         </div>
+
                       </div>
                     )}
 
