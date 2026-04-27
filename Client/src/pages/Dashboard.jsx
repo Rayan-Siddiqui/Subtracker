@@ -34,10 +34,34 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Placeholder box */}
-        <div className="bg-white p-6 rounded-2xl shadow text-center">
-          Dashboard working ✅
-        </div>
+
+
+
+        {/* Summary cards */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div className="bg-white p-6 rounded-2xl shadow">
+    <p className="text-gray-500">Total Monthly Cost</p>
+    <h2 className="text-2xl font-bold">$0.00</h2>
+  </div>
+
+  <div className="bg-white p-6 rounded-2xl shadow">
+    <p className="text-gray-500">Total Subscriptions</p>
+    <h2 className="text-2xl font-bold">0</h2>
+  </div>
+
+  <div className="bg-white p-6 rounded-2xl shadow">
+    <p className="text-gray-500">Due Soon</p>
+    <h2 className="text-2xl font-bold">0</h2>
+  </div>
+</div>
+<div className="bg-white p-6 rounded-2xl shadow">
+  <h2 className="text-xl font-semibold mb-4">Your Subscriptions</h2>
+
+  <p className="text-gray-500">Subscriptions will show here.</p>
+</div>
+
+
+
 
       </div>
     </div>
