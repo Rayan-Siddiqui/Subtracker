@@ -39,10 +39,10 @@ Deployment:
 ## 🌐 Live Demo
 
 Frontend:
-👉 https://your-vercel-url.vercel.app
+👉 https://subtracker-gilt.vercel.app/
 
 Backend:
-👉 https://subtracker-api-kpe2.onrender.com
+👉 https://subtracker-api-kpe2.onrender.com/api/test
 
 ---
 
