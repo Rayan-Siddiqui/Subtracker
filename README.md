@@ -37,6 +37,8 @@ Deployment:
 ---
 
 ## 📸 Screenshots
+### Register Page
+![Register](screenshots/register.png)
 
 ### Login Page
 ![Login](screenshots/login.png)
@@ -44,11 +46,6 @@ Deployment:
 ### Dashboard
 ![Dashboard](screenshots/dashboard.png)
 
-### Add Subscription
-![Add](screenshots/add.png)
-
-### Chart View
-![Chart](screenshots/chart.png)
 
 ## 🌐 Live Demo
 Demo Video: https://youtu.be/3UDHa785GcE
