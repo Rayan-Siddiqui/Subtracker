@@ -36,6 +36,20 @@ Deployment:
 
 ---
 
+## 📸 Screenshots
+
+### Login Page
+![Login](screenshots/login.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Add Subscription
+![Add](screenshots/add.png)
+
+### Chart View
+![Chart](screenshots/chart.png)
+
 ## 🌐 Live Demo
 Demo Video: https://youtu.be/3UDHa785GcE
 
