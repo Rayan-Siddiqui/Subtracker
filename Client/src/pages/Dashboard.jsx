@@ -6,7 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import {
   fetchSubscriptions,
   deleteSubscription,
-  createSubscription
+  createSubscription,
+  updateSubscription
 } from '../services/subscriptionService';
 
 import SubscriptionForm from '../components/SubscriptionForm';
@@ -87,17 +88,17 @@ export default function Dashboard() {
 
   const saveEdit = async () => {
     try {
-      await fetch(`http://localhost:5000/api/subscriptions/${editingId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          ...editForm,
-          monthlyCost: Number(editForm.monthlyCost)
-        })
+      await updateSubscription(editingId, {
+        ...editForm,
+        monthlyCost: Number(editForm.monthlyCost)
       });
+
+      setEditingId(null);
+      loadSubscriptions();
+    } catch {
+      setError('Update failed');
+    }
+  };
 
       setEditingId(null);
       loadSubscriptions();

@@ -1,8 +1,10 @@
-// Import required packages
+// Load environment variables
+require('dotenv').config();
+
+// Import packages
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -20,16 +22,15 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is working' });
 });
 
-// Use auth routes
+// Routes
 app.use('/api/auth', authRoutes);
-
-// Use subscription routes
 app.use('/api/subscriptions', subscriptionRoutes);
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
-  .catch((error) => console.log(error));
+  .catch((error) => console.log('MongoDB connection error:', error));
 
 // Start server
 const PORT = process.env.PORT || 5000;
