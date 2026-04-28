@@ -95,14 +95,14 @@ export default function Dashboard() {
 
       setEditingId(null);
       loadSubscriptions();
-    } catch {
+    } catch (error) {
       setError('Update failed');
     }
   };
 
       setEditingId(null);
       loadSubscriptions();
-    } catch {
+    } catch (error) {
       setError('Update failed');
     }
   };
