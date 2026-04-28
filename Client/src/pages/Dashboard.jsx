@@ -86,26 +86,25 @@ export default function Dashboard() {
     });
   };
 
-  const saveEdit = async () => {
-    try {
-      await updateSubscription(editingId, {
-        ...editForm,
-        monthlyCost: Number(editForm.monthlyCost)
-      });
+  // Save edited subscription
+const saveEdit = async () => {
+  try {
+    await updateSubscription(editingId, {
+      ...editForm,
+      monthlyCost: Number(editForm.monthlyCost)
+    });
 
-      setEditingId(null);
-      loadSubscriptions();
-    } catch (error) {
-      setError('Update failed');
-    }
-  };
+    // Exit edit mode
+    setEditingId(null);
 
-      setEditingId(null);
-      loadSubscriptions();
-    } catch (error) {
-      setError('Update failed');
-    }
-  };
+    // Refresh data
+    await loadSubscriptions();
+
+  } catch (error) {
+    console.error(error);
+    setError('Update failed');
+  }
+};
 
   const totalCost = subscriptions.reduce(
     (sum, sub) => sum + Number(sub.monthlyCost || 0),
